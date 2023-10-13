@@ -36,10 +36,6 @@ func TableRowDatasource() *schema.Resource {
 }
 
 func tableRowRead(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
-	tflog.Info(ctx, "AaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAa")
-	tflog.Info(ctx, "AaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAa")
-	tflog.Info(ctx, "AaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAa")
-	tflog.Info(ctx, "AaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAaAa")
 	tflog.Info(ctx, fmt.Sprintf("tableRowRead: data=%+v", data))
 	c := m.(*client.Client)
 	var err error
