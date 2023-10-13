@@ -7,8 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-var ServiceCatalogTableName = "sc_req_item"
-
 var ServiceCatalogOrderColumns = map[string]*schema.Schema{
 	// https://developer.servicenow.com/dev.do#!/reference/api/utah/rest/c_ServiceCatalogAPI#servicecat-PUT-items-submit_guide?navFilter=servicecatalog/items
 	"sc_cat_item_sys_id": {
@@ -16,13 +14,6 @@ var ServiceCatalogOrderColumns = map[string]*schema.Schema{
 		ValidateFunc: validation.StringLenBetween(32, 32),
 		Required:     true,
 		ForceNew:     true,
-	},
-	"sc_req_item_raw_data": {
-		Description: "Data from the sc_rec_item table",
-		Computed:    true,
-		Type:        schema.TypeMap,
-		Elem: &schema.Schema{
-			Type: schema.TypeString},
 	},
 }
 

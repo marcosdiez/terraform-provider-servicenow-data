@@ -103,47 +103,18 @@ func serviceCatalogOrderCreate(ctx context.Context, d *schema.ResourceData, m in
 
 	sys_id := data_result["sys_id"].(string)
 
-	sc_req_item_raw_data, err := serviceCatalogOrderReadTableData(sys_id, client)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	tflog.Info(ctx, fmt.Sprintf("serviceCatalogOrderCreate: result=%s", sc_req_item_raw_data.RowData))
-
-	if err := d.Set("sc_req_item_raw_data", sc_req_item_raw_data.RowData); err != nil {
-		return diag.FromErr(err)
-	}
-
 	d.SetId(sys_id)
 	return nil
 }
 
-func serviceCatalogOrderReadTableData(sys_id string, client *client.Client) (*models.ParsedResult, error) {
-	query := map[string]interface{}{"request": sys_id}
-	rowData, err := client.GetTableRow(models.ServiceCatalogTableName, query)
-	if err != nil {
-		return nil, err
-	}
-	return rowData, nil
-}
-
 func serviceCatalogOrderRead(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
 	sys_id := data.Id()
-	tflog.Info(ctx, fmt.Sprintf("serviceCatalogOrderRead: sys_id=%s", sys_id))
-	client := m.(*client.Client)
-
-	sc_req_item_raw_data, err := serviceCatalogOrderReadTableData(sys_id, client)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	tflog.Info(ctx, fmt.Sprintf("serviceCatalogOrderRead: result=%s", sc_req_item_raw_data.RowData))
-
-	if err := data.Set("sc_req_item_raw_data", sc_req_item_raw_data.RowData); err != nil {
-		return diag.FromErr(err)
-	}
+	tflog.Info(ctx, fmt.Sprintf("serviceCatalogOrderRead: reading a ServiceCatalogOrder in service now is not possible. This is a NO OP by design. Use servicenow-data_table_row with the appropriate table instead. sys_id=%s", sys_id))
 	return nil
 }
 
-func serviceCatalogOrderDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	tflog.Info(ctx, fmt.Sprintf("serviceCatalogOrderDelete: deleting is not possible. This is a NO OP by design. data=%s", d))
+func serviceCatalogOrderDelete(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+	sys_id := data.Id()
+	tflog.Info(ctx, fmt.Sprintf("serviceCatalogOrderDelete: deleting in service now is not possible. This is a NO OP by design. The resource will be removed from the terraform state. sys_id=%s", sys_id))
 	return nil
 }
