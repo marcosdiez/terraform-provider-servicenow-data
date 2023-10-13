@@ -56,9 +56,8 @@ func prepareCreatePayload(d *schema.ResourceData) map[string]interface{} {
 	return payload
 }
 
-func sendCreatePayload(ctx context.Context, url string, payload map[string]interface{}, m interface{}) (map[string]any, diag.Diagnostics) {
-	c := m.(*client.Client)
-	rawData, err := c.SendRequest(http.MethodPost, url, payload, 200)
+func sendCreatePayload(ctx context.Context, url string, payload map[string]interface{}, client *client.Client) (map[string]any, diag.Diagnostics) {
+	rawData, err := client.SendRequest(http.MethodPost, url, payload, 200)
 	if err != nil {
 		return nil, diag.FromErr(fmt.Errorf("Error on SendRequest: %s", err))
 	}
@@ -71,12 +70,12 @@ func sendCreatePayload(ctx context.Context, url string, payload map[string]inter
 	return data, nil
 }
 
-func saveCreatePayload(data_result map[string]any, d *schema.ResourceData) diag.Diagnostics {
+func saveCreatePayload(data_result map[string]any, data *schema.ResourceData) diag.Diagnostics {
 	for k, v := range data_result {
 		if k == "$$uiNotification" {
 			continue
 		}
-		if err := d.Set(k, v); err != nil {
+		if err := data.Set(k, v); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -88,7 +87,8 @@ func serviceCatalogOrderCreate(ctx context.Context, d *schema.ResourceData, m in
 	payload := prepareCreatePayload(d)
 	tflog.Info(ctx, fmt.Sprintf("serviceCatalogOrderCreate: url=%s, params=%s", url, payload))
 
-	data, diags := sendCreatePayload(ctx, url, payload, m)
+	client := m.(*client.Client)
+	data, diags := sendCreatePayload(ctx, url, payload, client)
 	if diags != nil {
 		return diags
 	}
@@ -101,64 +101,51 @@ func serviceCatalogOrderCreate(ctx context.Context, d *schema.ResourceData, m in
 		return diags
 	}
 
-	d.SetId(data_result["sys_id"].(string))
+	sys_id := data_result["sys_id"].(string)
+
+	sc_req_item_raw_data, err := serviceCatalogOrderReadTableData(sys_id, client)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	tflog.Info(ctx, fmt.Sprintf("serviceCatalogOrderCreate: result=%s", sc_req_item_raw_data.RowData))
+
+	if err := d.Set("sc_req_item_raw_data", sc_req_item_raw_data.RowData); err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.SetId(sys_id)
 	return nil
 }
 
-func serviceCatalogOrderRead(_ context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
-	// c := m.(*client.Client)
-	// Warning or errors can be collected in a slice type
-	// var diags diag.Diagnostics
-	return diag.FromErr(fmt.Errorf("serviceCatalogOrderRead has not been implemented yet"))
+func serviceCatalogOrderReadTableData(sys_id string, client *client.Client) (*models.ParsedResult, error) {
+	query := map[string]interface{}{"request": sys_id}
+	rowData, err := client.GetTableRow(models.ServiceCatalogTableName, query)
+	if err != nil {
+		return nil, err
+	}
+	return rowData, nil
+}
 
-	// c := m.(*client.Client)
-	// var tableID, sysID string
-	// var err error
-	// // Warning or errors can be collected in a slice type
-	// var diags diag.Diagnostics
-	// tableID, sysID, err = ExtractIDs(data.Id())
-	// if err != nil {
-	// 	return append(diags, diag.FromErr(err)...)
-	// }
+func serviceCatalogOrderRead(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
 
-	// rowData, err := c.GetServiceCatalogOrder(tableID, map[string]interface{}{"sys_id": sysID})
-	// if err != nil {
-	// 	return diag.FromErr(err)
-	// }
-	// if len(rowData.SysData) == 0 {
-	// 	data.SetId("")
-	// } else {
-	// 	parseResultDiag := ParsedResultToSchema(data, rowData)
-	// 	diags = append(diags, parseResultDiag...)
-	// 	if len(parseResultDiag) > 0 {
-	// 		return diags
-	// 	}
-	// 	data.SetId(fmt.Sprintf("%s/%s", tableID, sysID))
-	// }
-	// return diags
+	sys_id := data.Id()
+	tflog.Info(ctx, fmt.Sprintf("serviceCatalogOrderRead: sys_id=%s", sys_id))
+	client := m.(*client.Client)
+
+	sc_req_item_raw_data, err := serviceCatalogOrderReadTableData(sys_id, client)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	tflog.Info(ctx, fmt.Sprintf("serviceCatalogOrderRead: result=%s", sc_req_item_raw_data.RowData))
+
+	if err := data.Set("sc_req_item_raw_data", sc_req_item_raw_data.RowData); err != nil {
+		return diag.FromErr(err)
+	}
+	var diags diag.Diagnostics
+	return diags
 }
 
 func serviceCatalogOrderDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	tflog.Info(ctx, fmt.Sprintf("serviceCatalogOrderDelete: deleting is not possible. This is a NO OP by design. data=%s", d))
 	return nil
 }
-
-// func ExtractIDs(ID string) (tableID, sysID string, err error) {
-// 	ids := strings.Split(ID, `/`)
-// 	if len(ids) != 2 {
-// 		return "", "", fmt.Errorf("faulty id!%s", ID)
-// 	}
-// 	return ids[0], ids[1], nil
-// }
-
-// func ParsedResultToSchema(d *schema.ResourceData, result *models.ParsedResult) diag.Diagnostics {
-// 	for k, v := range result.SysData {
-// 		if err := d.Set(k, v); err != nil {
-// 			return diag.FromErr(err)
-// 		}
-// 	}
-// 	if err := d.Set("row_data", result.RowData); err != nil {
-// 		return diag.FromErr(err)
-// 	}
-// 	return nil
-// }
