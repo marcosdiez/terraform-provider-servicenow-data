@@ -57,7 +57,7 @@ func (client *Client) GetTableRow(tableID string, params map[string]interface{})
 	if err != nil {
 		return nil, err
 	}
-	result, err := client.ParseRawListData(rawData)
+	result, err := parseRawListData(rawData)
 	tflog.Info(client.ctx, fmt.Sprintf("GetTableRow: err=%d, result=%s", err, result))
 	return result, err
 
@@ -69,7 +69,7 @@ func (client *Client) InsertTableRow(tableID string, tableData interface{}) (*mo
 	if err != nil {
 		return nil, err
 	}
-	return client.ParseRawData(rawData)
+	return parseRawData(rawData)
 }
 
 func (client *Client) DeleteTableRow(tableID string, sysID string) error {
@@ -131,10 +131,10 @@ func (client *Client) UpdateTableRow(tableID, sysID string, payload interface{})
 	if err != nil {
 		return nil, err
 	}
-	return client.ParseRawData(rawData)
+	return parseRawData(rawData)
 }
 
-func (client *Client) ParseRawData(rawData *[]byte) (*models.ParsedResult, error) {
+func parseRawData(rawData *[]byte) (*models.ParsedResult, error) {
 	var rawResult models.RawResult
 	err := json.Unmarshal(*rawData, &rawResult)
 	if err != nil {
@@ -148,7 +148,7 @@ func (client *Client) ParseRawData(rawData *[]byte) (*models.ParsedResult, error
 	return result, nil
 }
 
-func (client *Client) ParseRawListData(rawData *[]byte) (*models.ParsedResult, error) {
+func parseRawListData(rawData *[]byte) (*models.ParsedResult, error) {
 	var rawResult models.RawResultList
 	err := json.Unmarshal(*rawData, &rawResult)
 	if err != nil {
