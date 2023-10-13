@@ -127,7 +127,6 @@ func serviceCatalogOrderReadTableData(sys_id string, client *client.Client) (*mo
 }
 
 func serviceCatalogOrderRead(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
-
 	sys_id := data.Id()
 	tflog.Info(ctx, fmt.Sprintf("serviceCatalogOrderRead: sys_id=%s", sys_id))
 	client := m.(*client.Client)
@@ -141,8 +140,7 @@ func serviceCatalogOrderRead(ctx context.Context, data *schema.ResourceData, m i
 	if err := data.Set("sc_req_item_raw_data", sc_req_item_raw_data.RowData); err != nil {
 		return diag.FromErr(err)
 	}
-	var diags diag.Diagnostics
-	return diags
+	return nil
 }
 
 func serviceCatalogOrderDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
